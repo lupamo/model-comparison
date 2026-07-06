@@ -1,0 +1,6 @@
+
+Explain the difference between a foundation model and a fine-tuned model in two sentences.
+Write a Python function that checks if a string is a palindrome.
+What are three tradeoffs between RAG and fine-tuning for a customer support chatbot?
+Summarize the plot of a story about a fisherman who catches a talking fish, in 3 sentences.
+Convert this to formal English: "yo can u fix the bug in the login page asap"
