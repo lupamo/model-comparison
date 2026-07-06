@@ -12,10 +12,16 @@ usage:
 import argparse
 import json
 import os
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+     from dotenv import load_dotenv
+     load_dotenv()
+except ImportError:
+     pass
 RESULTS_FILE = Path("results.jsonl")
 
 
@@ -24,20 +30,21 @@ RESULTS_FILE = Path("results.jsonl")
 # { "text": str, "input_tokens": int, "output_tokens": int}
 #----------------------------------------------------------------------------------------
 
-def call_claude(prompt: str, model:str = "claude-sonnet-4.6") -> dict:
-	import anthropic
-	client = anthropic.Anthropic()
-	resp = client.message.create(
-		model=model,
-		max_tokens=1024,
-		message={"role": "user", "content": prompt}
-	)
-	text = "".join(block.text for block in resp.content if block.type == "text")
-	return {
-		"text": text,
-		"input_tokens": resp.usage.prompt_tokens,
-		"output_tokens": resp.usage.completion_tokens
-	}
+def call_claude(prompt: str, model: str = "claude-sonnet-4-6") -> dict:
+    import anthropic
+    client = anthropic.Anthropic()
+    resp = client.messages.create(
+        model=model,
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    text = "".join(block.text for block in resp.content if block.type == "text")
+    return {
+        "text": text,
+        "input_tokens": resp.usage.input_tokens,
+        "output_tokens": resp.usage.output_tokens,
+    }
+
 
 
 def call_openai(prompt: str, model: str = "gpt-4o-mini") -> dict:
@@ -138,7 +145,20 @@ def append_results(records: list[dict]) -> None:
     with RESULTS_FILE.open("a") as f:
         for r in records:
             f.write(json.dumps(r) + "\n")
-            
+
+def check_env(providers: list[str]) -> None:
+    """Fail fast with a clear message instead of a per-call traceback."""
+    required = {
+        "claude": "ANTHROPIC_API_KEY",
+        "openai": "OPENAI_API_KEY",
+        "groq": "GROQ_API_KEY",
+    }
+    missing = [required[p] for p in providers if not os.environ.get(required[p])]
+    if missing:
+        print(f"Missing environment variables: {', '.join(missing)}")
+        print("Set them in a .env file (see README) or via `export VAR=value` in this shell session.")
+        sys.exit(1)
+       
 def main():
     parser = argparse.ArgumentParser(description="Compare foundation models on the same prompt(s).")
     parser.add_argument("prompt", nargs="?", help="A single prompt to run.")
