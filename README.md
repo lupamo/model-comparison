@@ -1,5 +1,5 @@
 # Model Comaparison Harnes
-A Minimal, framework tool to compare foundation models on the same prompts
+A Minimal, framework tool to compare foundation models on the same prompts using a script
 The goal isn't the tool itself, it's to build intuition for what actually happens when you "call a model": tokens in, tokens out, latency cost, and how much quality varies across providers for the exact same input.
 
 ## Setup
